@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Single-file: Spark — portfolio & playground</title>
+  <meta name="description" content="Single-file website with HTML, CSS and JS bundled together. Theme, small editor, and optional auto-update via /version.txt polling." />
+
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#7c5cff; --glass: rgba(255,255,255,0.04);
+      --radius:14px; --shadow: 0 6px 30px rgba(2,8,23,0.6);
+    }
+    [data-theme='light']{ --bg:#f6f8fb; --card:#ffffff; --muted:#556; --accent:#5b21b6; --glass: rgba(10,10,10,0.03); }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:var(--muted);background:linear-gradient(180deg,var(--bg),#071025);}
+
+    .wrap{max-width:1100px;margin:36px auto;padding:28px;border-radius:18px;background:linear-gradient(180deg,var(--card),rgba(0,0,0,0.05));box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 380px;gap:22px}
+
+    header{display:flex;align-items:center;gap:14px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent), #34d399);display:grid;place-items:center;color:white;font-weight:700;font-size:20px}
+    h1{margin:0;font-size:20px;color:var(--accent)}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+
+    .main{padding:18px;background:linear-gradient(180deg,transparent,var(--glass));border-radius:12px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#3b82f6);color:white;border:0}
+
+    .preview{margin-top:14px;padding:14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);min-height:220px}
+    .meta{font-size:13px;color:var(--muted);margin-top:10px}
+
+    aside{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);min-height:320px}
+    label{display:block;font-weight:600;color:var(--muted);margin-bottom:6px}
+    textarea{width:100%;height:160px;background:transparent;border:1px dashed rgba(255,255,255,0.04);color:var(--muted);padding:10px;border-radius:8px;resize:vertical}
+
+    footer{grid-column:1/-1;margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    .chip{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);padding:6px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-weight:600}
+
+    /* responsive */
+    @media (max-width:920px){.wrap{grid-template-columns:1fr;padding:18px}.logo{display:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <div>
+      <header>
+        <div class="logo">S</div>
+        <div>
+          <h1>Spark — single-file site</h1>
+          <p class="lead">All HTML, CSS and JS bundled. Lightweight, editable, and easy to deploy.</p>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <div id="status" class="chip">Ready</div>
+        </div>
+      </header>
+
+      <section class="main" aria-labelledby="preview-title">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div>
+            <strong id="preview-title">Live preview</strong>
+            <div class="meta">Edit the page content on the right. Use "Apply" to inject changes without reloading.</div>
+          </div>
+          <div class="controls">
+            <button id="themeToggle" title="Toggle theme">Toggle theme</button>
+            <button id="applyBtn" class="btn-primary">Apply changes</button>
+            <button id="downloadBtn">Download HTML</button>
+          </div>
+        </div>
+
+        <div class="preview" id="preview">
+          <h2 style="color:var(--accent);margin:0 0 6px 0">Hello — edit me</h2>
+          <p style="margin:0 0 12px 0">This is a single-file website. You can change content in the editor, then click Apply to inject changes instantly.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="chip">Fast</button>
+            <button class="chip">Portable</button>
+            <button class="chip">Offline-ready</button>
+          </div>
+        </div>
+      </section>
+
+      <footer>Made for speed • Press <strong>Apply</strong> to see your edits. To enable auto-reload on deploy, include a <code>/version.txt</code> file on the server (explained below).</footer>
+    </div>
+
+    <aside>
+      <label for="editor">HTML content (body of the page)</label>
+      <textarea id="editor"><!-- Edit the inner HTML of the preview area. Keep structure simple. -->
+<h2 style="color:var(--accent);margin:0 0 6px 0">Hello — edit me</h2>
+<p style="margin:0 0 12px 0">This is a single-file website. You can change content in the editor, then click Apply to inject changes instantly.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="chip">Fast</button>
+  <button class="chip">Portable</button>
+  <button class="chip">Offline-ready</button>
+</div>
+      </textarea>
+
+      <div style="margin-top:12px">
+        <label>Auto-update (optional)</label>
+        <p class="meta">The site can poll <code>/version.txt</code> every 5 seconds and reload the page when it detects a new value. Useful for free static hosts that redeploy on push (Render, Vercel, etc.).</p>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="enablePoll">Enable polling</button>
+          <button id="disablePoll">Disable polling</button>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0;border:0;border-top:1px dashed rgba(255,255,255,0.03)">
+      <label>Quick snippets</label>
+      <p class="meta">Use these helpers if you want to expand the single-file later.</p>
+      <ul style="padding-left:18px;margin:6px 0 0 0;color:var(--muted)">
+        <li><code>/version.txt</code> — simple string like <code>20251007-01</code></li>
+        <li><code>service-worker</code> — register a small SW for offline caching (requires HTTPS)</li>
+      </ul>
+    </aside>
+  </div>
+
+  <script>
+    (function(){
+      const editor = document.getElementById('editor');
+      const preview = document.getElementById('preview');
+      const applyBtn = document.getElementById('applyBtn');
+      const themeBtn = document.getElementById('themeToggle');
+      const status = document.getElementById('status');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const enablePoll = document.getElementById('enablePoll');
+      const disablePoll = document.getElementById('disablePoll');
+
+      // Apply editor content into preview safely (innerHTML by design here)
+      applyBtn.addEventListener('click', ()=>{
+        preview.innerHTML = editor.value;
+        status.textContent = 'Applied ' + new Date().toLocaleTimeString();
+      });
+
+      // Theme toggle stored in localStorage
+      const root = document.documentElement;
+      function setTheme(t){
+        root.setAttribute('data-theme', t);
+        localStorage.setItem('spark-theme', t);
+      }
+      themeBtn.addEventListener('click', ()=>{
+        const cur = localStorage.getItem('spark-theme') || 'dark';
+        setTheme(cur === 'dark' ? 'light' : 'dark');
+      });
+      setTheme(localStorage.getItem('spark-theme') || 'dark');
+
+      // Download the current single-file HTML
+      downloadBtn.addEventListener('click', ()=>{
+        const html = buildFullHTML(editor.value);
+        const blob = new Blob([html], {type:'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'single-file-spark.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      function buildFullHTML(innerHTML){
+        // A minimal outer HTML wrapper; contains same styles and script essence so file is self-contained.
+        return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Single-file-spark</title>\n<style>\n${escapeCss(getComputedStyle(document.documentElement).cssText || '')}\n/* Core styles (kept minimal so downloaded file looks good). */\nbody{font-family:Inter,system-ui,Arial;margin:24px;background:linear-gradient(180deg,var(--bg),#071025);color:var(--muted)}\n.chip{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid rgba(255,255,255,0.03)}\n</style>\n</head>\n<body>\n<div style=\"max-width:900px;margin:0 auto;padding:18px;background:var(--card);border-radius:12px;\">${innerHTML}</div>\n</body>\n</html>`;
+      }
+
+      function escapeCss(s){ return s.replace(/`/g,'\\`').replace(/\$/g,'\\$'); }
+
+      // Polling-based auto-reload (optional)
+      let pollTimer = null; let lastVersion = null;
+      async function checkVersion(){
+        try{
+          const r = await fetch('/version.txt', {cache:'no-store'});
+          if(!r.ok) return;
+          const text = (await r.text()).trim();
+          if(lastVersion === null) lastVersion = text;
+          if(text !== lastVersion){
+            lastVersion = text;
+            status.textContent = 'New version detected: ' + text + ' — reloading';
+            setTimeout(()=> location.reload(true), 700);
+          }
+        }catch(e){ /* ignore */ }
+      }
+      enablePoll.addEventListener('click', ()=>{
+        if(pollTimer) return; pollTimer = setInterval(checkVersion, 5000);
+        status.textContent = 'Polling /version.txt every 5s';
+      });
+      disablePoll.addEventListener('click', ()=>{
+        if(pollTimer) clearInterval(pollTimer); pollTimer = null; status.textContent = 'Polling stopped';
+      });
+
+      // small UX: apply initial editor content to preview if preview is empty
+      if(preview.innerHTML.trim() === '') preview.innerHTML = editor.value;
+
+      // keyboard: Ctrl/Cmd+Enter to apply
+      window.addEventListener('keydown', (e)=>{
+        if((e.ctrlKey||e.metaKey) && e.key === 'Enter'){ e.preventDefault(); applyBtn.click(); }
+      });
+
+      // tiny helper to keep status alive
+      setInterval(()=>{
+        status.style.opacity = 0.98; setTimeout(()=> status.style.opacity = 1,200);
+      },3000);
+
+    })();
+  </script>
+</body>
+</html>
